@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Help &amp; Support | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="text-center mb-5">
+        <h1 class="h2 fw-bold text-navy">Election Support &amp; Help Desk</h1>
+        <p class="text-muted">Assisting students and faculty with account verification, voting rules, and inquiries.</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-5">
+          <div class="card card-portal p-4 h-100">
+            <h5 class="fw-bold mb-3 text-navy">Office of Student Affairs</h5>
+            <div class="mb-3">
+              <div class="small text-muted fw-bold text-uppercase">Election Commission Office</div>
+              <div>Admin Block 3, 2nd Floor, Room 204</div>
+              <div>Apex Institute of Technology Campus</div>
+            </div>
+
+            <div class="mb-3">
+              <div class="small text-muted fw-bold text-uppercase">Direct Inquiries</div>
+              <div><i class="bi bi-envelope me-2 text-primary"></i> elections@apexcollege.edu</div>
+              <div><i class="bi bi-telephone me-2 text-primary"></i> +1 (555) 234-5678</div>
+            </div>
+
+            <div class="mb-3">
+              <div class="small text-muted fw-bold text-uppercase">Office Hours During Voting</div>
+              <div>Monday – Friday: 08:30 AM – 06:00 PM</div>
+              <div>Saturday: 09:00 AM – 02:00 PM</div>
+            </div>
+
+            <div class="alert alert-info border-0 p-3 rounded-3 small mt-auto">
+              <i class="bi bi-info-circle me-1"></i>
+              If your student account status shows <strong>Pending Approval</strong> for more than 24 hours, please carry your valid College ID card to Room 204 for expedited in-person clearance.
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-7">
+          <div class="card card-portal p-4">
+            <h5 class="fw-bold mb-3 text-navy">Send an Inquiry to the Commission</h5>
+            <form method="post">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Your Full Name</label>
+                  <input type="text" class="form-control" name="name" required placeholder="e.g. Jordan Hayes" value="{{ user.get_full_name|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">College Email</label>
+                  <input type="email" class="form-control" name="email" required placeholder="e.g. j.hayes@college.edu" value="{{ user.email|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Student ID / Roll No</label>
+                  <input type="text" class="form-control" name="student_id" placeholder="e.g. CS2023048" value="{{ user.student_id|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Inquiry Topic</label>
+                  <select class="form-select" name="topic">
+                    <option value="approval">Account Approval Delay</option>
+                    <option value="login">Login / Password Issue</option>
+                    <option value="eligibility">Candidate Nomination Question</option>
+                    <option value="receipt">Voting Receipt Discrepancy</option>
+                    <option value="other">General Question</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-bold">Message / Question</label>
+                  <textarea class="form-control" rows="4" name="message" required placeholder="Describe your question or issue in detail..."></textarea>
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-send me-1"></i> Submit Inquiry
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

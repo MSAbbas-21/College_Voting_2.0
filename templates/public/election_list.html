@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Elections Directory | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+    <div>
+      <h1 class="h2 fw-bold text-navy mb-1">Campus Elections Directory</h1>
+      <p class="text-muted mb-0">Browse active, upcoming, and past student governance elections.</p>
+    </div>
+    {% if user.is_authenticated and user.is_admin_user %}
+      <a href="{% url 'dashboard:election_create' %}" class="btn btn-primary btn-sm mt-3 mt-md-0">
+        <i class="bi bi-plus-lg me-1"></i> Create New Election
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Active Elections -->
+  <div class="mb-5">
+    <div class="d-flex align-items-center mb-3">
+      <span class="badge bg-success p-2 rounded-circle me-2"></span>
+      <h4 class="fw-bold mb-0">Currently Open for Voting</h4>
+    </div>
+
+    {% if active_elections %}
+      <div class="row g-4">
+        {% for el in active_elections %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card card-portal h-100">
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-success">Voting Live</span>
+                  <small class="text-muted"><i class="bi bi-people me-1"></i> {{ el.candidate_count }} Candidates</small>
+                </div>
+                <h5 class="card-title fw-bold text-navy mb-2">{{ el.title }}</h5>
+                <p class="card-text text-muted small flex-grow-1 mb-3">{{ el.description|truncatewords:20 }}</p>
+                <div class="bg-light p-2 rounded small text-muted mb-3">
+                  <div><i class="bi bi-clock me-1 text-danger"></i> Closes: {{ el.end_date|date:"M d, Y H:i" }}</div>
+                </div>
+                <div class="d-flex gap-2">
+                  <a href="{% url 'elections:election_detail' el.slug %}" class="btn btn-outline-secondary btn-sm flex-fill">
+                    Details
+                  </a>
+                  <a href="{% url 'voting:ballot' el.slug %}" class="btn btn-primary btn-sm flex-fill">
+                    <i class="bi bi-check-circle me-1"></i> Vote Now
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card card-portal p-4 text-center text-muted">
+        <i class="bi bi-calendar-check fs-2 text-secondary mb-2"></i>
+        <p class="mb-0">There are no elections currently accepting votes.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Upcoming Elections -->
+  <div class="mb-5">
+    <div class="d-flex align-items-center mb-3">
+      <span class="badge bg-primary p-2 rounded-circle me-2"></span>
+      <h4 class="fw-bold mb-0">Scheduled &amp; Upcoming Elections</h4>
+    </div>
+
+    {% if upcoming_elections %}
+      <div class="row g-4">
+        {% for el in upcoming_elections %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card card-portal h-100 border-dashed">
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-primary">Upcoming</span>
+                  <small class="text-muted"><i class="bi bi-people me-1"></i> {{ el.candidate_count }} Candidates</small>
+                </div>
+                <h5 class="card-title fw-bold text-navy mb-2">{{ el.title }}</h5>
+                <p class="card-text text-muted small flex-grow-1 mb-3">{{ el.description|truncatewords:20 }}</p>
+                <div class="bg-light p-2 rounded small text-muted mb-3">
+                  <div><i class="bi bi-calendar-event me-1 text-primary"></i> Opens: {{ el.start_date|date:"M d, Y H:i" }}</div>
+                </div>
+                <a href="{% url 'elections:election_detail' el.slug %}" class="btn btn-outline-primary btn-sm">
+                  View Candidates &amp; Manifestos
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card card-portal p-3 text-center text-muted small">
+        No upcoming elections scheduled at this time.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Completed Elections -->
+  <div>
+    <div class="d-flex align-items-center mb-3">
+      <span class="badge bg-secondary p-2 rounded-circle me-2"></span>
+      <h4 class="fw-bold mb-0">Past / Concluded Elections</h4>
+    </div>
+
+    {% if past_elections %}
+      <div class="row g-4">
+        {% for el in past_elections %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card card-portal h-100">
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-dark">Concluded</span>
+                  {% if el.is_published %}
+                    <span class="badge bg-success"><i class="bi bi-trophy me-1"></i> Results Available</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Results Pending</span>
+                  {% endif %}
+                </div>
+                <h5 class="card-title fw-bold text-navy mb-2">{{ el.title }}</h5>
+                <p class="card-text text-muted small flex-grow-1 mb-3">{{ el.description|truncatewords:20 }}</p>
+                <div class="bg-light p-2 rounded small text-muted mb-3">
+                  <div><i class="bi bi-check2-all me-1 text-success"></i> Ended: {{ el.end_date|date:"M d, Y" }}</div>
+                  <div><i class="bi bi-box-seam me-1 text-secondary"></i> Total Votes: {{ el.total_votes_count }}</div>
+                </div>
+                {% if el.is_published %}
+                  <a href="{% url 'results:election_result' el.slug %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-bar-chart-fill me-1"></i> View Certified Results
+                  </a>
+                {% else %}
+                  <button class="btn btn-outline-secondary btn-sm" disabled>
+                    <i class="bi bi-hourglass-split me-1"></i> Results Pending Publication
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card card-portal p-3 text-center text-muted small">
+        No past elections recorded yet.
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

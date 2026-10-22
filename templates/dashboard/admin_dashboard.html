@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrator Dashboard | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <!-- Admin Sidebar -->
+  {% include 'includes/admin_sidebar.html' %}
+
+  <!-- Dashboard Main Content -->
+  <div class="dashboard-content">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+      <div>
+        <h1 class="h3 fw-bold text-navy mb-1">Election Operations Console</h1>
+        <p class="text-muted small mb-0">System metrics, active polls, and pending student credential verification.</p>
+      </div>
+      <div class="d-flex gap-2 mt-3 mt-md-0">
+        <a href="{% url 'dashboard:election_create' %}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-circle me-1"></i> New Election
+        </a>
+        <a href="{% url 'dashboard:candidate_create' %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-person-plus me-1"></i> Add Candidate
+        </a>
+      </div>
+    </div>
+
+    <!-- 5 KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6 col-xl">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Registered Students</div>
+            <div class="metric-value">{{ total_students }}</div>
+            <div class="small text-muted mt-1">{{ approved_students }} Verified</div>
+          </div>
+          <div class="metric-icon-wrap bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-people-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl">
+        <div class="metric-card {% if pending_approvals > 0 %}border-warning bg-warning bg-opacity-10{% endif %}">
+          <div>
+            <div class="metric-label">Pending Approvals</div>
+            <div class="metric-value text-warning">{{ pending_approvals }}</div>
+            <div class="small text-muted mt-1">
+              {% if pending_approvals > 0 %}
+                <a href="{% url 'dashboard:students_list' %}?status=pending" class="text-warning fw-bold">Review Queue &rarr;</a>
+              {% else %}
+                All clear
+              {% endif %}
+            </div>
+          </div>
+          <div class="metric-icon-wrap bg-warning bg-opacity-25 text-warning">
+            <i class="bi bi-person-exclamation"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Total Candidates</div>
+            <div class="metric-value">{{ total_candidates }}</div>
+            <div class="small text-muted mt-1">Across all positions</div>
+          </div>
+          <div class="metric-icon-wrap bg-info bg-opacity-10 text-info">
+            <i class="bi bi-person-badge-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Active Elections</div>
+            <div class="metric-value text-success">{{ active_elections }}</div>
+            <div class="small text-muted mt-1">Of {{ total_elections }} total polls</div>
+          </div>
+          <div class="metric-icon-wrap bg-success bg-opacity-10 text-success">
+            <i class="bi bi-record-circle-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Total Votes Cast</div>
+            <div class="metric-value text-purple" style="color: #6366f1;">{{ total_votes }}</div>
+            <div class="small text-muted mt-1">Audited Secret Ballots</div>
+          </div>
+          <div class="metric-icon-wrap bg-primary bg-opacity-10" style="color: #6366f1;">
+            <i class="bi bi-box-seam-fill"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <!-- Pending Student Approvals Queue -->
+      <div class="col-lg-7">
+        <div class="card card-portal h-100">
+          <div class="card-header card-header-clean d-flex justify-content-between align-items-center">
+            <div class="fw-bold text-navy">
+              <i class="bi bi-clock-history text-warning me-2"></i> Pending Student Approvals
+              {% if pending_approvals > 0 %}
+                <span class="badge bg-warning text-dark ms-2">{{ pending_approvals }} Needs Action</span>
+              {% endif %}
+            </div>
+            <a href="{% url 'dashboard:students_list' %}?status=pending" class="btn btn-outline-secondary btn-sm">
+              View All
+            </a>
+          </div>
+          <div class="card-body p-0">
+            {% if pending_students %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light small">
+                    <tr>
+                      <th class="ps-3">Student Name</th>
+                      <th>Roll Number</th>
+                      <th>Department</th>
+                      <th>Year</th>
+                      <th class="text-end pe-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for s in pending_students %}
+                      <tr>
+                        <td class="ps-3">
+                          <div class="fw-semibold text-navy">{{ s.get_full_name }}</div>
+                          <small class="text-muted">{{ s.email }}</small>
+                        </td>
+                        <td><span class="font-monospace small">{{ s.student_id }}</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ s.get_department_display }}</span></td>
+                        <td><span class="small">{{ s.get_year_of_study_display }}</span></td>
+                        <td class="text-end pe-3">
+                          <div class="d-inline-flex gap-1">
+                            <form action="{% url 'dashboard:student_approve' s.id %}" method="post" class="d-inline">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-success btn-sm py-1 px-2" title="Approve Student">
+                                <i class="bi bi-check-lg"></i> Approve
+                              </button>
+                            </form>
+                            <form action="{% url 'dashboard:student_reject' s.id %}" method="post" class="d-inline">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Reject Student" data-confirm="Reject student {{ s.get_full_name }}?">
+                                <i class="bi bi-x-lg"></i>
+                              </button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="text-center py-5 text-muted">
+                <i class="bi bi-patch-check-fill fs-2 text-success d-block mb-2"></i>
+                <h6 class="fw-bold mb-1">Queue Clear!</h6>
+                <p class="small mb-0">No pending student registrations awaiting administrative approval.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Elections Overview -->
+      <div class="col-lg-5">
+        <div class="card card-portal h-100">
+          <div class="card-header card-header-clean d-flex justify-content-between align-items-center">
+            <div class="fw-bold text-navy">
+              <i class="bi bi-calendar2-week text-primary me-2"></i> Recent Elections
+            </div>
+            <a href="{% url 'dashboard:elections_list' %}" class="btn btn-outline-secondary btn-sm">Manage</a>
+          </div>
+          <div class="card-body p-0">
+            {% if recent_elections %}
+              <div class="list-group list-group-flush">
+                {% for el in recent_elections %}
+                  <div class="list-group-item p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <a href="{% url 'dashboard:election_detail' el.id %}" class="fw-bold text-navy text-decoration-none">
+                        {{ el.title }}
+                      </a>
+                      <span class="{{ el.status_badge_class }}">{{ el.time_status }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center small text-muted mt-2">
+                      <div>
+                        <span class="me-3"><i class="bi bi-people me-1"></i> {{ el.c_count }} Candidates</span>
+                        <span><i class="bi bi-box-seam me-1"></i> {{ el.v_count }} Votes</span>
+                      </div>
+                      <div class="d-flex gap-1">
+                        <form action="{% url 'dashboard:election_toggle_status' el.id %}" method="post" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-xs {% if el.status == 'active' %}btn-outline-warning{% else %}btn-outline-success{% endif %}" style="font-size: 0.72rem;">
+                            {{ el.status|yesno:"Close,Open" }}
+                          </button>
+                        </form>
+                        {% if el.is_published %}
+                          <span class="badge bg-success" title="Results Published"><i class="bi bi-eye-fill"></i> Public</span>
+                        {% else %}
+                          <span class="badge bg-secondary" title="Results Concealed"><i class="bi bi-eye-slash-fill"></i> Hidden</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-2 text-secondary d-block mb-1"></i>
+                <p class="small mb-0">No elections registered yet.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Participation Audit Activity (Privacy Protected) -->
+    <div class="card card-portal">
+      <div class="card-header card-header-clean d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-bold text-navy"><i class="bi bi-shield-check text-success me-2"></i> Real-Time Voter Audit Stream</div>
+          <small class="text-muted">Displays voter participation timestamps. In compliance with election privacy rules, ballot choice is never exposed.</small>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_activity %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Student Name</th>
+                  <th>Student ID</th>
+                  <th>Election</th>
+                  <th>Digital Receipt Code</th>
+                  <th>Timestamp</th>
+                  <th class="text-end pe-3">Integrity Check</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for act in recent_activity %}
+                  <tr>
+                    <td class="ps-3 fw-semibold text-navy">{{ act.student.get_full_name }}</td>
+                    <td><span class="font-monospace">{{ act.student.student_id }}</span></td>
+                    <td>{{ act.election.title }}</td>
+                    <td><code>{{ act.receipt_code }}</code></td>
+                    <td class="text-muted">{{ act.voted_at|date:"M d, Y - H:i:s" }}</td>
+                    <td class="text-end pe-3">
+                      <span class="badge bg-success-subtle text-success border border-success">
+                        <i class="bi bi-check-circle-fill me-1"></i> Verified
+                      </span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted small">
+            No voting activity recorded yet.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

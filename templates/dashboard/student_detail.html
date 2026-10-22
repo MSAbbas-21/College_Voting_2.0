@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Details: {{ student.get_full_name }} | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  {% include 'includes/admin_sidebar.html' %}
+
+  <div class="dashboard-content">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+      <div>
+        <h1 class="h3 fw-bold text-navy mb-0">Student Profile &amp; Verification Record</h1>
+      </div>
+      <a href="{% url 'dashboard:students_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Student List
+      </a>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-5">
+        <div class="card card-portal p-4 text-center">
+          {% if student.profile_photo %}
+            <img src="{{ student.profile_photo.url }}" class="rounded-circle border mx-auto mb-3" width="100" height="100" style="object-fit: cover;">
+          {% else %}
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px; font-size: 2.5rem; font-weight: bold;">
+              {{ student.first_name|default:student.username|slice:":1"|upper }}
+            </div>
+          {% endif %}
+
+          <h4 class="fw-bold text-navy mb-1">{{ student.get_full_name }}</h4>
+          <div class="font-monospace text-muted mb-2">{{ student.student_id }}</div>
+
+          <div class="mb-3">
+            {% if student.approval_status == 'approved' %}
+              <span class="badge badge-approved p-2"><i class="bi bi-patch-check-fill me-1"></i> Verified &amp; Approved Voter</span>
+            {% elif student.approval_status == 'pending' %}
+              <span class="badge badge-pending p-2"><i class="bi bi-clock-history me-1"></i> Awaiting Administrator Approval</span>
+            {% else %}
+              <span class="badge badge-rejected p-2"><i class="bi bi-x-circle-fill me-1"></i> Registration Rejected</span>
+            {% endif %}
+          </div>
+
+          <div class="border-top pt-3 text-start small">
+            <div class="mb-2"><strong>Email:</strong> {{ student.email }}</div>
+            <div class="mb-2"><strong>Department:</strong> {{ student.get_department_display }}</div>
+            <div class="mb-2"><strong>Year:</strong> {{ student.get_year_of_study_display }}</div>
+            <div class="mb-2"><strong>Mobile:</strong> {{ student.phone_number|default:"Not provided" }}</div>
+            <div class="mb-2"><strong>Registered On:</strong> {{ student.date_joined|date:"M d, Y - H:i" }}</div>
+            <div class="mb-2"><strong>Account State:</strong> {{ student.is_active|yesno:"Active,Deactivated" }}</div>
+            {% if student.approved_by %}
+              <div class="mb-2"><strong>Verified By:</strong> {{ student.approved_by.get_full_name|default:student.approved_by.username }} ({{ student.approval_date|date:"M d, Y" }})</div>
+            {% endif %}
+            {% if student.rejection_reason %}
+              <div class="alert alert-danger py-1 px-2 mt-2"><strong>Rejection Reason:</strong> {{ student.rejection_reason }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-center">
+            {% if student.approval_status != 'approved' %}
+              <form action="{% url 'dashboard:student_approve' student.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm">
+                  <i class="bi bi-check-lg me-1"></i> Approve Account
+                </button>
+              </form>
+            {% endif %}
+
+            {% if student.approval_status != 'rejected' %}
+              <form action="{% url 'dashboard:student_reject' student.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-warning btn-sm" data-confirm="Reject this student?">
+                  <i class="bi bi-x-lg me-1"></i> Reject Account
+                </button>
+              </form>
+            {% endif %}
+
+            <form action="{% url 'dashboard:student_toggle_active' student.id %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn {% if student.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} btn-sm">
+                <i class="bi bi-power me-1"></i> {{ student.is_active|yesno:"Deactivate,Activate" }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card card-portal h-100">
+          <div class="card-header card-header-clean">
+            <h5 class="fw-bold text-navy mb-0">Electoral Participation Records</h5>
+            <small class="text-muted">Displays voter turnout history. Secrecy rules strictly prohibit recording candidate choices.</small>
+          </div>
+          <div class="card-body p-0">
+            {% if participations %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Election</th>
+                      <th>Time Cast</th>
+                      <th>Receipt Code</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for p in participations %}
+                      <tr>
+                        <td class="ps-3 fw-semibold text-navy">{{ p.election.title }}</td>
+                        <td>{{ p.voted_at|date:"M d, Y - H:i:s" }}</td>
+                        <td><code>{{ p.receipt_code }}</code></td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="text-center py-5 text-muted small">
+                <i class="bi bi-receipt-cutoff fs-2 d-block mb-1 text-secondary"></i>
+                This student has not yet participated in any campus elections.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

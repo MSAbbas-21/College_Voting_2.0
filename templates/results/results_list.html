@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Certified Election Results | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+    <div>
+      <h1 class="h2 fw-bold text-navy mb-1">Certified Election Results</h1>
+      <p class="text-muted mb-0">Official election outcomes, candidate tallies, and voter turnout statistics.</p>
+    </div>
+    {% if is_admin %}
+      <span class="badge bg-info p-2 mt-3 mt-md-0">
+        <i class="bi bi-shield-lock me-1"></i> Admin View (Showing Published &amp; Hidden)
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="alert alert-light border small text-muted mb-4 shadow-sm">
+    <i class="bi bi-info-circle-fill text-primary me-2"></i>
+    In accordance with election by-laws, election results are certified and published by the College Election Commission only after all polls have officially concluded and ballot tallies verified.
+  </div>
+
+  {% if elections_with_data %}
+    <div class="row g-4">
+      {% for item in elections_with_data %}
+        {% with el=item.election res=item.summary %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card card-portal h-100 d-flex flex-column shadow-sm">
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="{{ el.status_badge_class }}">{{ el.time_status }}</span>
+                  {% if el.is_published %}
+                    <span class="badge bg-success-subtle text-success border border-success">
+                      <i class="bi bi-patch-check-fill me-1"></i> Certified
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary">
+                      <i class="bi bi-eye-slash-fill me-1"></i> Unpublished
+                    </span>
+                  {% endif %}
+                </div>
+
+                <h5 class="card-title fw-bold text-navy mb-2">{{ el.title }}</h5>
+                <p class="card-text text-muted small flex-grow-1 mb-3">
+                  {{ el.description|truncatewords:20 }}
+                </p>
+
+                <!-- Winner or Tie Banner -->
+                <div class="p-3 rounded-3 mb-3 {% if res.has_tie %}bg-warning bg-opacity-10 border border-warning{% elif res.winner_names %}bg-success bg-opacity-10 border border-success{% else %}bg-light border{% endif %}">
+                  <div class="small fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">
+                    {% if res.has_tie %}
+                      <i class="bi bi-flag-fill text-warning me-1"></i> Tie Detected
+                    {% elif res.winner_names %}
+                      <i class="bi bi-trophy-fill text-success me-1"></i> Declared Winner
+                    {% else %}
+                      Election Outcome
+                    {% endif %}
+                  </div>
+                  <div class="fw-semibold {% if res.has_tie %}text-warning{% elif res.winner_names %}text-success{% else %}text-muted{% endif %} small">
+                    {{ res.winner_text }}
+                  </div>
+                </div>
+
+                <div class="small text-muted mb-3 border-top pt-2">
+                  <div class="d-flex justify-content-between">
+                    <span>Total Ballots:</span>
+                    <strong class="text-navy">{{ res.total_votes }} votes</strong>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span>Voter Turnout:</span>
+                    <strong class="text-navy">{{ res.turnout_percentage }}%</strong>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-auto">
+                  <a href="{% url 'results:election_result' el.slug %}" class="btn btn-primary btn-sm flex-fill">
+                    <i class="bi bi-bar-chart-fill me-1"></i> Full Breakdown
+                  </a>
+                  <a href="{% url 'results:print_result' el.slug %}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Print Official Certificate">
+                    <i class="bi bi-printer"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card card-portal p-5 text-center text-muted">
+      <i class="bi bi-trophy fs-1 text-secondary mb-2"></i>
+      <h5>No published results yet.</h5>
+      <p class="small text-muted mb-0">Active elections are in progress. Results will be published here once voting closes and the commission verifies tallies.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

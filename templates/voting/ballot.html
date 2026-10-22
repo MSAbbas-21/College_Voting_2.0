@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Official Ballot: {{ election.title }} | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Official Ballot Header -->
+      <div class="card card-portal border-0 shadow-sm mb-4 overflow-hidden">
+        <div class="p-4 p-md-5 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-success p-2 px-3 fs-6">
+              <i class="bi bi-shield-lock-fill me-1"></i> Official Secret Ballot
+            </span>
+            <span class="badge bg-light text-dark">
+              Voter: {{ user.student_id }} (Verified)
+            </span>
+          </div>
+          <h1 class="display-6 fw-bold mb-2">{{ election.title }}</h1>
+          <p class="lead text-white-50 mb-3" style="max-width: 800px;">
+            {{ election.description }}
+          </p>
+
+          <div class="d-flex flex-wrap gap-3 small text-white-50 border-top border-secondary pt-3">
+            <div><i class="bi bi-clock me-1 text-danger"></i> Voting Closes: {{ election.end_date|date:"F d, Y - H:i" }}</div>
+            <div><i class="bi bi-check-circle me-1 text-info"></i> Limit: 1 Vote Per Verified Student</div>
+            <div><i class="bi bi-eye-slash me-1 text-success"></i> Anonymous Selection</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voting Instructions Alert -->
+      <div class="alert alert-warning border-0 d-flex align-items-center small mb-4 shadow-sm">
+        <i class="bi bi-shield-exclamation fs-3 text-warning me-3 flex-shrink-0"></i>
+        <div>
+          <strong>Important Voting Protocol:</strong> Select one candidate below and click <em>"Review &amp; Confirm Vote"</em>. You will see a final confirmation screen before your ballot is permanently cast. Once submitted, your vote <strong>cannot be modified or retracted</strong>.
+        </div>
+      </div>
+
+      <!-- Candidate Selection Form -->
+      <form action="{% url 'voting:confirm_vote' election.slug %}" method="post">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <h4 class="fw-bold text-navy mb-1">Select Your Candidate</h4>
+          <p class="text-muted small">Click any candidate card or radio button to choose your representative.</p>
+        </div>
+
+        <div class="row g-4 mb-4">
+          {% for c in candidates %}
+            <div class="col-md-6">
+              <div class="candidate-card candidate-card-selectable p-3 cursor-pointer d-flex flex-column h-100 shadow-sm" style="cursor: pointer;">
+                <div class="d-flex gap-3">
+                  <!-- Photo / Avatar -->
+                  <div class="flex-shrink-0" style="width: 80px; height: 80px;">
+                    {% if c.photo %}
+                      <img src="{{ c.photo.url }}" class="rounded-3 border w-100 h-100" style="object-fit: cover;" alt="{{ c.name }}">
+                    {% else %}
+                      <div class="rounded-3 bg-light border text-primary w-100 h-100 d-flex align-items-center justify-content-center fs-2 fw-bold">
+                        {{ c.name|slice:":1" }}
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Details -->
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <span class="badge bg-primary text-uppercase" style="font-size: 0.7rem;">{{ c.position }}</span>
+                        <h5 class="fw-bold text-navy mb-0 mt-1">{{ c.name }}</h5>
+                        <small class="text-muted">{{ c.department }} &bull; Roll: {{ c.student_id }}</small>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input candidate-select-radio fs-4" type="radio" name="candidate_id" value="{{ c.id }}" id="cand_{{ c.id }}" required>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Manifesto Platform -->
+                <div class="mt-3 pt-2 border-top">
+                  <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 0.7rem;">Platform Summary</div>
+                  <p class="small text-muted mb-0" style="white-space: pre-line;">{{ c.manifesto|truncatewords:40 }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Submission Bar -->
+        <div class="card card-portal p-4 bg-light border text-center">
+          <p class="small text-muted mb-3">
+            <i class="bi bi-lock-fill text-success me-1"></i>
+            Your choice will be anonymized upon submission. A unique digital receipt will be recorded to your voter profile.
+          </p>
+          <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'accounts:student_dashboard' %}" class="btn btn-outline-secondary px-4">
+              Cancel &amp; Return
+            </a>
+            <button type="submit" id="ballot-continue-btn" class="btn btn-primary btn-lg px-5 shadow-sm">
+              Review &amp; Confirm Vote <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

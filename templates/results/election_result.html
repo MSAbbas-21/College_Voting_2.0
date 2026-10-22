@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Results: {{ election.title }} | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="{{ election.status_badge_class }}">{{ election.time_status }}</span>
+        {% if election.is_published %}
+          <span class="badge bg-success-subtle text-success border border-success">
+            <i class="bi bi-patch-check-fill me-1"></i> Certified &amp; Published
+          </span>
+        {% else %}
+          <span class="badge bg-warning-subtle text-warning border border-warning">
+            <i class="bi bi-eye-slash-fill me-1"></i> Commission Preview (Unpublished)
+          </span>
+        {% endif %}
+      </div>
+      <h1 class="h2 fw-bold text-navy mb-0">{{ election.title }}</h1>
+    </div>
+    <div class="d-flex gap-2 mt-3 mt-md-0">
+      <a href="{% url 'results:print_result' election.slug %}" target="_blank" class="btn btn-outline-dark btn-sm shadow-sm">
+        <i class="bi bi-printer me-1"></i> Print Certificate
+      </a>
+      <a href="{% url 'results:results_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> All Results
+      </a>
+    </div>
+  </div>
+
+  <!-- Winner or Tie Announcement Banner -->
+  {% if results.total_votes > 0 and results.max_votes > 0 %}
+    {% if results.has_tie %}
+      <div class="card border-warning bg-warning bg-opacity-10 shadow-sm p-4 mb-4 rounded-4">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-warning text-dark p-3 me-3 d-flex align-items-center justify-content-center" style="width: 58px; height: 58px;">
+            <i class="bi bi-flag-fill fs-3"></i>
+          </div>
+          <div>
+            <span class="badge bg-warning text-dark fw-bold text-uppercase px-2 py-1 mb-1">Electoral Tie Detected</span>
+            <h3 class="h4 fw-bold text-navy mb-1">{{ results.winner_text }}</h3>
+            <p class="small text-muted mb-0">Under college election rules, tied outcomes are subject to run-off elections or parliamentary resolution by the election board.</p>
+          </div>
+        </div>
+      </div>
+    {% elif results.winner_names %}
+      <div class="card border-success bg-success bg-opacity-10 shadow-sm p-4 mb-4 rounded-4">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-success text-white p-3 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 58px; height: 58px;">
+            <i class="bi bi-trophy-fill fs-3"></i>
+          </div>
+          <div>
+            <span class="badge bg-success fw-bold text-uppercase px-2 py-1 mb-1">Certified Winner Declared</span>
+            <h3 class="h4 fw-bold text-navy mb-1">{{ results.winner_text }}</h3>
+            <p class="small text-muted mb-0">Congratulations to the elected representative. Results certified by the {{ COLLEGE_NAME }} Election Commission.</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-secondary p-3 mb-4 rounded-3 text-center">
+      <i class="bi bi-inbox me-1"></i> No votes have been registered for this election yet.
+    </div>
+  {% endif %}
+
+  <!-- KPI Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+      <div class="metric-card">
+        <div>
+          <div class="metric-label">Total Votes Cast</div>
+          <div class="metric-value text-primary">{{ results.total_votes }}</div>
+        </div>
+        <div class="metric-icon-wrap bg-primary bg-opacity-10 text-primary">
+          <i class="bi bi-box-seam-fill"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+      <div class="metric-card">
+        <div>
+          <div class="metric-label">Voter Turnout</div>
+          <div class="metric-value text-success">{{ results.turnout_percentage }}%</div>
+        </div>
+        <div class="metric-icon-wrap bg-success bg-opacity-10 text-success">
+          <i class="bi bi-pie-chart-fill"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+      <div class="metric-card">
+        <div>
+          <div class="metric-label">Eligible Voters</div>
+          <div class="metric-value">{{ results.total_eligible_voters }}</div>
+        </div>
+        <div class="metric-icon-wrap bg-secondary bg-opacity-10 text-secondary">
+          <i class="bi bi-people-fill"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+      <div class="metric-card">
+        <div>
+          <div class="metric-label">Contesting Candidates</div>
+          <div class="metric-value text-navy">{{ results.results_data|length }}</div>
+        </div>
+        <div class="metric-icon-wrap bg-info bg-opacity-10 text-info">
+          <i class="bi bi-person-lines-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Results Standings -->
+  <div class="card card-portal mb-4">
+    <div class="card-header card-header-clean d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold text-navy mb-0">Candidate Vote Standings</h5>
+      <small class="text-muted">Calculated dynamically from secret ballot database</small>
+    </div>
+    <div class="card-body p-4">
+      {% if results.results_data %}
+        <div class="space-y-4">
+          {% for item in results.results_data %}
+            <div class="p-3 border rounded-3 mb-3 bg-white shadow-sm {% if item.is_winner %}border-success border-2 bg-success bg-opacity-10{% elif item.is_tie %}border-warning border-2 bg-warning bg-opacity-10{% endif %}">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                <div class="d-flex align-items-center">
+                  {% if item.candidate.photo %}
+                    <img src="{{ item.candidate.photo.url }}" class="rounded-circle border me-3" width="56" height="56" style="object-fit: cover;" alt="{{ item.candidate.name }}">
+                  {% else %}
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center me-3 fs-3 fw-bold" style="width: 56px; height: 56px;">
+                      {{ item.candidate.name|slice:":1" }}
+                    </div>
+                  {% endif %}
+                  <div>
+                    <div class="d-flex align-items-center gap-2">
+                      <h5 class="fw-bold text-navy mb-0">{{ item.candidate.name }}</h5>
+                      {% if item.is_winner %}
+                        <span class="badge bg-success"><i class="bi bi-trophy-fill me-1"></i> Winner</span>
+                      {% elif item.is_tie %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-flag-fill me-1"></i> Tied</span>
+                      {% endif %}
+                    </div>
+                    <div class="small text-muted font-monospace">
+                      {{ item.candidate.position }} &bull; {{ item.candidate.department }} &bull; Roll: {{ item.candidate.student_id }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-md-end">
+                  <div class="h4 fw-bold text-navy mb-0">{{ item.votes }} <span class="fs-6 text-muted fw-normal">votes</span></div>
+                  <span class="badge bg-light text-dark border fs-6">{{ item.percentage }}%</span>
+                </div>
+              </div>
+
+              <!-- Animated Progress Bar -->
+              <div class="progress result-progress mb-2">
+                <div class="progress-bar result-progress-bar {% if item.is_winner %}bg-success{% endif %}" role="progressbar" style="width: {{ item.percentage }}%;" aria-valuenow="{{ item.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                  {% if item.percentage > 5 %}{{ item.percentage }}%{% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-4 text-muted">No candidates found for this election.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="text-center text-muted small mt-4">
+    <i class="bi bi-shield-check text-success me-1"></i>
+    These results have been tallied according to the election integrity algorithm of {{ COLLEGE_NAME }}.
+  </div>
+</div>
+{% endblock %}

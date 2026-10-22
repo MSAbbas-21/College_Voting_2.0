@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin: {{ election.title }} | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  {% include 'includes/admin_sidebar.html' %}
+
+  <div class="dashboard-content">
+    <!-- Top Action Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="{{ election.status_badge_class }}">{{ election.time_status }}</span>
+          {% if election.is_published %}
+            <span class="badge bg-success"><i class="bi bi-eye-fill me-1"></i> Results Public</span>
+          {% else %}
+            <span class="badge bg-secondary"><i class="bi bi-eye-slash-fill me-1"></i> Results Concealed</span>
+          {% endif %}
+        </div>
+        <h1 class="h3 fw-bold text-navy mb-0">{{ election.title }}</h1>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+        <form action="{% url 'dashboard:election_toggle_status' election.id %}" method="post" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm {% if election.status == 'active' %}btn-warning{% else %}btn-success{% endif %}">
+            <i class="bi {% if election.status == 'active' %}bi-stop-fill{% else %}bi-play-fill{% endif %} me-1"></i>
+            {{ election.status|yesno:"Close Polling,Open Polling" }}
+          </button>
+        </form>
+
+        <form action="{% url 'dashboard:election_toggle_publish' election.id %}" method="post" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm {% if election.is_published %}btn-outline-secondary{% else %}btn-outline-success{% endif %}">
+            <i class="bi {% if election.is_published %}bi-eye-slash{% else %}bi-eye{% endif %} me-1"></i>
+            {{ election.is_published|yesno:"Hide Results,Publish Results" }}
+          </button>
+        </form>
+
+        <a href="{% url 'results:print_result' election.slug %}" target="_blank" class="btn btn-outline-dark btn-sm">
+          <i class="bi bi-printer me-1"></i> Print Certificate
+        </a>
+
+        <a href="{% url 'dashboard:election_edit' election.id %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+      </div>
+    </div>
+
+    <!-- Metrics Row -->
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6 col-md-3">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Total Votes Cast</div>
+            <div class="metric-value text-primary">{{ results.total_votes }}</div>
+          </div>
+          <div class="metric-icon-wrap bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-box-seam-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-md-3">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Voter Turnout</div>
+            <div class="metric-value text-success">{{ results.turnout_percentage }}%</div>
+          </div>
+          <div class="metric-icon-wrap bg-success bg-opacity-10 text-success">
+            <i class="bi bi-pie-chart-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-md-3">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Candidates</div>
+            <div class="metric-value">{{ candidates.count }}</div>
+          </div>
+          <div class="metric-icon-wrap bg-info bg-opacity-10 text-info">
+            <i class="bi bi-people-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-md-3">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Eligible Voters</div>
+            <div class="metric-value text-secondary">{{ results.total_eligible_voters }}</div>
+          </div>
+          <div class="metric-icon-wrap bg-secondary bg-opacity-10 text-secondary">
+            <i class="bi bi-person-check-fill"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Vote Count Tally -->
+    <div class="card card-portal mb-4">
+      <div class="card-header card-header-clean d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="fw-bold text-navy mb-0">Candidate Vote Standings &amp; Tally</h5>
+          <small class="text-muted">Dynamic results computed directly from the database.</small>
+        </div>
+        {% if results.total_votes > 0 and results.max_votes > 0 %}
+          {% if results.has_tie %}
+            <span class="badge bg-warning text-dark p-2 fs-6">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ results.winner_text }}
+            </span>
+          {% else %}
+            <span class="badge bg-success p-2 fs-6">
+              <i class="bi bi-trophy-fill me-1"></i> {{ results.winner_text }}
+            </span>
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="card-body p-4">
+        {% if results.results_data %}
+          <div class="space-y-4">
+            {% for item in results.results_data %}
+              <div class="p-3 border rounded-3 mb-3 bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="d-flex align-items-center">
+                    {% if item.candidate.photo %}
+                      <img src="{{ item.candidate.photo.url }}" class="rounded-circle me-3 border" width="44" height="44" style="object-fit: cover;">
+                    {% else %}
+                      <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; font-weight: bold;">
+                        {{ item.candidate.name|slice:":1" }}
+                      </div>
+                    {% endif %}
+                    <div>
+                      <h6 class="fw-bold text-navy mb-0">{{ item.candidate.name }}</h6>
+                      <small class="text-muted">{{ item.candidate.position }} &bull; {{ item.candidate.department }}</small>
+                    </div>
+                  </div>
+
+                  <div class="text-end">
+                    <span class="h5 fw-bold text-navy mb-0">{{ item.votes }}</span>
+                    <span class="small text-muted">votes ({{ item.percentage }}%)</span>
+                    {% if item.is_winner %}
+                      <span class="badge bg-success ms-2"><i class="bi bi-trophy-fill me-1"></i> Winner</span>
+                    {% elif item.is_tie %}
+                      <span class="badge bg-warning text-dark ms-2"><i class="bi bi-flag-fill me-1"></i> Tied</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="progress result-progress">
+                  <div class="progress-bar result-progress-bar" role="progressbar" style="width: {{ item.percentage }}%;" aria-valuenow="{{ item.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    {% if item.percentage > 7 %}{{ item.percentage }}%{% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted small">
+            No candidates added to this election yet.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Contesting Candidates Details & Management -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <div class="card card-portal h-100">
+          <div class="card-header card-header-clean d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-navy mb-0">Contesting Candidates ({{ candidates.count }})</h5>
+            <a href="{% url 'dashboard:candidate_create' %}?election={{ election.id }}" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-plus me-1"></i> Add Candidate
+            </a>
+          </div>
+          <div class="card-body p-0">
+            {% if candidates %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Candidate</th>
+                      <th>Post</th>
+                      <th>Roll Number</th>
+                      <th class="text-end pe-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for c in candidates %}
+                      <tr>
+                        <td class="ps-3 fw-semibold text-navy">{{ c.name }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ c.position }}</span></td>
+                        <td><span class="font-monospace">{{ c.student_id }}</span></td>
+                        <td class="text-end pe-3">
+                          <a href="{% url 'dashboard:candidate_edit' c.id %}" class="btn btn-xs btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                          </a>
+                          <form action="{% url 'dashboard:candidate_delete' c.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-xs btn-outline-danger" data-confirm="Delete candidate {{ c.name }}?">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="text-center py-4 text-muted small">
+                No candidates contesting this election yet.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Voter Turnout Audit Stream -->
+      <div class="col-lg-5">
+        <div class="card card-portal h-100">
+          <div class="card-header card-header-clean">
+            <h5 class="fw-bold text-navy mb-0">Turnout Audit Stream</h5>
+            <small class="text-muted">Student voting timestamps (anonymized)</small>
+          </div>
+          <div class="card-body p-0">
+            {% if participations %}
+              <div class="list-group list-group-flush small" style="max-height: 380px; overflow-y: auto;">
+                {% for p in participations %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <div class="fw-semibold text-navy">{{ p.student.get_full_name }}</div>
+                      <code class="text-muted" style="font-size: 0.75rem;">{{ p.receipt_code }}</code>
+                    </div>
+                    <div class="text-muted small">
+                      {{ p.voted_at|date:"H:i:s" }}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center py-5 text-muted small">
+                No ballots cast in this election yet.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

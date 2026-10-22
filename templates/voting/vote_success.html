@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Vote Successfully Recorded | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card card-portal shadow-lg border-0 text-center overflow-hidden">
+        <div class="p-4 p-md-5 bg-success text-white">
+          <div class="rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 80px; height: 80px;">
+            <i class="bi bi-check-lg display-4"></i>
+          </div>
+          <h1 class="h3 fw-bold mb-1">Your Vote Has Been Cast!</h1>
+          <p class="text-white-50 small mb-0">Ballot successfully submitted and counted.</p>
+        </div>
+
+        <div class="p-4 p-md-5">
+          <h5 class="fw-bold text-navy mb-2">{{ election.title }}</h5>
+          <p class="small text-muted mb-4">
+            Thank you for participating in the campus democratic process. Your vote was securely anonymized and recorded into the electoral ledger.
+          </p>
+
+          <div class="receipt-box mb-4">
+            <span class="badge bg-primary text-uppercase px-3 py-1 mb-2">Digital Ballot Receipt</span>
+            <div class="small text-muted">Keep this verification token for your records:</div>
+            <div class="receipt-code-display" id="receipt-code">
+              {{ receipt_code|default:"VOTE-CONFIRMED" }}
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline-primary" id="copy-receipt-btn">
+                <i class="bi bi-clipboard me-1"></i> Copy Receipt Code
+              </button>
+            </div>
+          </div>
+
+          <div class="alert alert-light border small text-muted text-start mb-4">
+            <i class="bi bi-shield-lock-fill text-success me-2"></i>
+            <strong>Privacy Guarantee:</strong> In accordance with college voting by-laws, your specific candidate choice is detached from your user profile. Neither the system administrators nor election officers can inspect your ballot choice.
+          </div>
+
+          <div class="d-grid gap-2">
+            <a href="{% url 'accounts:student_dashboard' %}" class="btn btn-primary btn-lg shadow-sm">
+              <i class="bi bi-grid-fill me-2"></i> Return to Student Dashboard
+            </a>
+            <a href="{% url 'voting:my_history' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-receipt me-1"></i> View All My Voting Receipts
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

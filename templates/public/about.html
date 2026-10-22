@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}About the System | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="bg-primary text-white py-5 mb-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
+  <div class="container text-center">
+    <h1 class="display-6 fw-bold">About the College Voting System</h1>
+    <p class="lead text-white-50 mx-auto" style="max-width: 700px;">
+      Empowering democratic student representation through transparent software architecture, strict privacy controls, and verifiable electoral governance.
+    </p>
+  </div>
+</div>
+
+<div class="container mb-5">
+  <div class="row g-5">
+    <div class="col-lg-8">
+      <div class="card card-portal p-4 mb-4">
+        <h3 class="fw-bold text-navy mb-3">Institutional Mission &amp; Purpose</h3>
+        <p>
+          The <strong>Apex College Voting Management System</strong> was designed and engineered to replace outdated, manual paper ballots with a secure, responsive, and verifiable digital election portal. Built specifically for collegiate environments, it serves student unions, departmental councils, and club leadership elections.
+        </p>
+        <p>
+          Student governance plays a fundamental role in university life—allocating activity funds, advocating for student welfare, and organizing major events. Our platform ensures every verified student has equal, frictionless access to exercise their franchise.
+        </p>
+      </div>
+
+      <div class="card card-portal p-4 mb-4" id="privacy">
+        <h3 class="fw-bold text-navy mb-3">
+          <i class="bi bi-shield-shaded text-primary me-2"></i> How Voting Privacy Works
+        </h3>
+        <p>
+          A cornerstone of fair elections is the <strong>Secret Ballot</strong>. Students must feel completely free to vote for candidates of their choice without fear of social scrutiny or administrative influence.
+        </p>
+        <div class="p-3 bg-light rounded-3 border mb-3">
+          <h6 class="fw-bold text-primary mb-2">Our Architectural Privacy Model</h6>
+          <ul class="mb-0 small text-secondary">
+            <li class="mb-2">
+              <strong>Voter Eligibility Ledger (<code>VoterParticipation</code>):</strong> Stores <em>that</em> a verified student cast a ballot in a given election, ensuring one vote per student.
+            </li>
+            <li class="mb-2">
+              <strong>Anonymous Ballot Box (<code>Vote</code>):</strong> Stores the candidate vote linked only to the election, completely detached from the student's ID or user record.
+            </li>
+            <li>
+              <strong>Digital Receipt Code:</strong> The student is issued an anonymous confirmation token (e.g. <code>VOTE-8F3A29B1</code>) verifying participation without revealing candidate choice.
+            </li>
+          </ul>
+        </div>
+        <p class="small text-muted mb-0">
+          <em>Note: While this architecture provides robust practical separation for collegiate demonstrations, it is a portfolio demo and does not claim cryptographically zero-knowledge or national election-grade anonymity.</em>
+        </p>
+      </div>
+
+      <div class="card card-portal p-4">
+        <h3 class="fw-bold text-navy mb-3">Election Governance &amp; By-Laws</h3>
+        <div class="accordion" id="rulesAccordion">
+          <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true">
+                1. Voter Eligibility &amp; Verification
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show">
+              <div class="accordion-body small text-muted">
+                Only currently enrolled students in good standing with valid college roll numbers are cleared for voting. Accounts must be authenticated and approved by the college administration.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                2. Irreversibility of Cast Ballots
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse">
+              <div class="accordion-body small text-muted">
+                Once a vote is confirmed and submitted via the ballot submission dialog, it is permanent. In accordance with standard electoral by-laws, votes cannot be retracted, altered, or re-cast.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
+            <h2 class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                3. Election Results Publication
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse">
+              <div class="accordion-body small text-muted">
+                To prevent bandwagon bias during ongoing voting, vote tallies remain concealed until the poll closes and the administrator officially certifies and publishes the results.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card card-portal p-4 mb-4">
+        <h5 class="fw-bold mb-3 text-navy">Technology Stack</h5>
+        <ul class="list-unstyled mb-0">
+          <li class="d-flex align-items-center mb-3">
+            <i class="bi bi-filetype-py fs-4 text-warning me-3"></i>
+            <div>
+              <div class="fw-bold">Python &amp; Django</div>
+              <small class="text-muted">MVC Framework &amp; ORM</small>
+            </div>
+          </li>
+          <li class="d-flex align-items-center mb-3">
+            <i class="bi bi-bootstrap-fill fs-4 text-primary me-3"></i>
+            <div>
+              <div class="fw-bold">Bootstrap 5.3 &amp; HTML5</div>
+              <small class="text-muted">Responsive UI/UX &amp; Icons</small>
+            </div>
+          </li>
+          <li class="d-flex align-items-center mb-3">
+            <i class="bi bi-database-fill fs-4 text-info me-3"></i>
+            <div>
+              <div class="fw-bold">SQLite Database</div>
+              <small class="text-muted">ACID Transactions &amp; Constraints</small>
+            </div>
+          </li>
+          <li class="d-flex align-items-center">
+            <i class="bi bi-shield-lock-fill fs-4 text-success me-3"></i>
+            <div>
+              <div class="fw-bold">Django Auth &amp; CSRF</div>
+              <small class="text-muted">PBKDF2 Password Hashing</small>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card card-portal p-4 bg-light">
+        <h5 class="fw-bold mb-2">Need Assistance?</h5>
+        <p class="small text-muted mb-3">Have questions about candidate eligibility or experiencing login difficulty?</p>
+        <a href="{% url 'public_contact' %}" class="btn btn-outline-primary btn-sm w-100">
+          <i class="bi bi-headset me-1"></i> Contact Election Desk
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

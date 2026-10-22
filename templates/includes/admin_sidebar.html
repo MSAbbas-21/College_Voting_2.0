@@ -1,0 +1,41 @@
+<div class="sidebar d-none d-lg-block">
+  <div class="d-flex align-items-center pb-3 mb-3 border-bottom border-secondary">
+    <div class="bg-primary text-white rounded p-2 me-2">
+      <i class="bi bi-shield-shaded fs-5"></i>
+    </div>
+    <div>
+      <h6 class="text-white mb-0 fw-bold">Admin Console</h6>
+      <small class="text-muted" style="font-size: 0.75rem;">Apex Election Board</small>
+    </div>
+  </div>
+
+  <div class="sidebar-heading">Core Management</div>
+  <a href="{% url 'dashboard:admin_dashboard' %}" class="sidebar-nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+    <i class="bi bi-speedometer2"></i> Overview
+  </a>
+  <a href="{% url 'dashboard:students_list' %}" class="sidebar-nav-item {% if 'students' in request.resolver_match.url_name %}active{% endif %}">
+    <i class="bi bi-people"></i> Students & Approvals
+  </a>
+  <a href="{% url 'dashboard:elections_list' %}" class="sidebar-nav-item {% if 'election' in request.resolver_match.url_name %}active{% endif %}">
+    <i class="bi bi-calendar2-week"></i> Elections
+  </a>
+  <a href="{% url 'dashboard:candidates_list' %}" class="sidebar-nav-item {% if 'candidate' in request.resolver_match.url_name %}active{% endif %}">
+    <i class="bi bi-person-lines-fill"></i> Candidates
+  </a>
+
+  <div class="sidebar-heading">Reports & Analytics</div>
+  <a href="{% url 'dashboard:analytics' %}" class="sidebar-nav-item {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+    <i class="bi bi-graph-up"></i> Turnout & Analytics
+  </a>
+  <a href="{% url 'results:results_list' %}" class="sidebar-nav-item">
+    <i class="bi bi-trophy"></i> Results Portal
+  </a>
+
+  <div class="sidebar-heading">System Operations</div>
+  <a href="/django-admin/" target="_blank" class="sidebar-nav-item">
+    <i class="bi bi-sliders"></i> Django Admin Site
+  </a>
+  <a href="{% url 'public_home' %}" class="sidebar-nav-item">
+    <i class="bi bi-box-arrow-up-right"></i> View Public Site
+  </a>
+</div>

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}My Voting Receipts | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+    <div>
+      <h1 class="h2 fw-bold text-navy mb-1">My Voting Participation Records</h1>
+      <p class="text-muted mb-0">Auditable digital receipts proving your participation in campus elections.</p>
+    </div>
+    <a href="{% url 'accounts:student_dashboard' %}" class="btn btn-outline-secondary btn-sm mt-3 mt-md-0">
+      <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <div class="alert alert-info border-0 small d-flex align-items-center mb-4">
+    <i class="bi bi-shield-check fs-4 text-primary me-3 flex-shrink-0"></i>
+    <div>
+      <strong>Voter Anonymity Protection:</strong> This table certifies <em>that</em> you voted and provides your unique verification receipt. To protect your confidentiality, your candidate choice is permanently excluded from this ledger.
+    </div>
+  </div>
+
+  <div class="card card-portal">
+    <div class="card-body p-0">
+      {% if participations %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small">
+              <tr>
+                <th class="ps-4">Election Title</th>
+                <th>Time Ballot Cast</th>
+                <th>Verification Receipt Token</th>
+                <th>Status</th>
+                <th class="text-end pe-4">Election Results</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in participations %}
+                <tr>
+                  <td class="ps-4">
+                    <div class="fw-bold text-navy">{{ p.election.title }}</div>
+                    <small class="text-muted">{{ p.election.get_status_display }}</small>
+                  </td>
+                  <td class="small text-muted">{{ p.voted_at|date:"M d, Y - H:i:s" }}</td>
+                  <td>
+                    <code class="bg-light px-3 py-1 rounded text-dark border fw-bold">{{ p.receipt_code }}</code>
+                  </td>
+                  <td>
+                    <span class="badge bg-success-subtle text-success border border-success">
+                      <i class="bi bi-check2-all me-1"></i> Certified
+                    </span>
+                  </td>
+                  <td class="text-end pe-4">
+                    {% if p.election.is_published %}
+                      <a href="{% url 'results:election_result' p.election.slug %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-trophy me-1"></i> View Results
+                      </a>
+                    {% else %}
+                      <span class="small text-muted">Awaiting Publication</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-receipt-cutoff fs-1 text-secondary d-block mb-2"></i>
+          <h5>No voting receipts found.</h5>
+          <p class="small text-muted mb-3">You have not yet cast a ballot in any active elections.</p>
+          <a href="{% url 'accounts:student_dashboard' %}" class="btn btn-primary btn-sm">
+            View Available Elections
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

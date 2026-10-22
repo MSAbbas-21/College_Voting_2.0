@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}System Analytics &amp; Turnout | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  {% include 'includes/admin_sidebar.html' %}
+
+  <div class="dashboard-content">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+      <div>
+        <h1 class="h3 fw-bold text-navy mb-1">Electoral Analytics &amp; Demographics</h1>
+        <p class="text-muted small mb-0">Departmental voter registration rates and election participation metrics.</p>
+      </div>
+      <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-outline-secondary btn-sm mt-3 mt-md-0">
+        <i class="bi bi-speedometer2 me-1"></i> Dashboard Overview
+      </a>
+    </div>
+
+    <!-- Department Demographics Table -->
+    <div class="card card-portal mb-4">
+      <div class="card-header card-header-clean">
+        <h5 class="fw-bold text-navy mb-0">Departmental Registration &amp; Verification Breakdown</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small">
+              <tr>
+                <th class="ps-4">Academic Department</th>
+                <th>Registered Students</th>
+                <th>Verified / Approved</th>
+                <th>Approval Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in dept_stats %}
+                <tr>
+                  <td class="ps-4 fw-semibold text-navy">{{ d.name }}</td>
+                  <td>{{ d.registered }}</td>
+                  <td><span class="badge bg-success-subtle text-success border border-success">{{ d.approved }}</span></td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                        {% widthratio d.approved d.registered 100 as rate %}
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {% if d.registered > 0 %}{{ rate }}{% else %}0{% endif %}%;"></div>
+                      </div>
+                      <small class="text-muted">{% if d.registered > 0 %}{{ rate }}%{% else %}0%{% endif %}</small>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Election Turnout Summaries -->
+    <div class="card card-portal">
+      <div class="card-header card-header-clean">
+        <h5 class="fw-bold text-navy mb-0">Election Turnout &amp; Outcome Summary</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Election</th>
+                <th>Status</th>
+                <th>Votes Cast</th>
+                <th>Voter Turnout</th>
+                <th>Outcome / Leader</th>
+                <th class="text-end pe-4">Public Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for res in election_summaries %}
+                <tr>
+                  <td class="ps-4">
+                    <a href="{% url 'dashboard:election_detail' res.election.id %}" class="fw-bold text-navy text-decoration-none">
+                      {{ res.election.title }}
+                    </a>
+                  </td>
+                  <td><span class="{{ res.election.status_badge_class }}">{{ res.election.time_status }}</span></td>
+                  <td><span class="fw-bold">{{ res.total_votes }}</span></td>
+                  <td>{{ res.turnout_percentage }}%</td>
+                  <td>
+                    {% if res.has_tie %}
+                      <span class="badge bg-warning text-dark"><i class="bi bi-flag-fill me-1"></i> Tied</span> {{ res.winner_text }}
+                    {% elif res.winner_names %}
+                      <span class="badge bg-success"><i class="bi bi-trophy-fill me-1"></i></span> {{ res.winner_text }}
+                    {% else %}
+                      <span class="text-muted">No votes yet</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end pe-4">
+                    {% if res.is_published %}
+                      <span class="badge bg-success">Published</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Unpublished</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">No election data recorded yet.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

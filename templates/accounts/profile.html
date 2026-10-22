@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card card-portal shadow-sm">
+        <div class="card-header-clean d-flex justify-content-between align-items-center">
+          <h4 class="h5 fw-bold text-navy mb-0">Student Profile &amp; Settings</h4>
+          <a href="{% url 'accounts:student_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+          </a>
+        </div>
+        <div class="card-body p-4">
+          <!-- Non-editable College Verified Data -->
+          <div class="bg-light p-3 rounded-3 mb-4 border">
+            <div class="small fw-bold text-uppercase text-secondary mb-2">College Record (Verified)</div>
+            <div class="row g-2 small">
+              <div class="col-sm-6">
+                <strong>Roll / Student ID:</strong> <span class="font-monospace">{{ user.student_id }}</span>
+              </div>
+              <div class="col-sm-6">
+                <strong>College Email:</strong> {{ user.email }}
+              </div>
+              <div class="col-sm-6">
+                <strong>Department:</strong> {{ user.get_department_display }}
+              </div>
+              <div class="col-sm-6">
+                <strong>Academic Year:</strong> {{ user.get_year_of_study_display }}
+              </div>
+              <div class="col-sm-6">
+                <strong>Account Status:</strong> 
+                <span class="badge {{ user.approval_status|yesno:'bg-success,bg-warning' }}">
+                  {{ user.get_approval_status_display }}
+                </span>
+              </div>
+              <div class="col-sm-6">
+                <strong>Date Registered:</strong> {{ user.date_joined|date:"M d, Y" }}
+              </div>
+            </div>
+          </div>
+
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">First Name</label>
+                {{ form.first_name }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Last Name</label>
+                {{ form.last_name }}
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold">Mobile Phone Number</label>
+                {{ form.phone_number }}
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold">Update Profile Photo</label>
+                {{ form.profile_photo }}
+                {% if user.profile_photo %}
+                  <div class="mt-2">
+                    <img src="{{ user.profile_photo.url }}" class="rounded-circle border" width="60" height="60" style="object-fit: cover;" alt="Current photo">
+                    <span class="small text-muted ms-2">Current photo</span>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-12 mt-4">
+                <button type="submit" class="btn btn-primary px-4">
+                  <i class="bi bi-check2 me-1"></i> Save Profile Changes
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
