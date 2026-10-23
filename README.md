@@ -270,3 +270,5 @@ When interviewing for a software engineering or Python/Django role, use this str
 ## 📄 License & Attribution
 
 Developed with ❤️ for academic and portfolio demonstration. Distributed under the MIT License.
+#   C o l l e g e _ V o t i n g _ 2 . 0  
+ 
